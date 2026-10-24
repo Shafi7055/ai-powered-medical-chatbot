@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     pinecone_api_key: str = ''
     tavily_api_key: str = ''
     pinecone_index: str = 'medical-chat-bot'
-    groq_chat_model: str = 'llama-3.3-70b-versatile'
+    groq_chat_model: str = 'openai/gpt-oss-120b'
     gemini_embed_model: str = 'text-embedding-004'
     groq_vision_model: str = 'qwen/qwen3.8-27b'
     api_token: str = ''
