@@ -1,6 +1,11 @@
 
 const $ = id => document.getElementById(id);
 
+const API_BASE_URL = window.location.port === '5500'
+    ? `${window.location.protocol}//${window.location.hostname}:8000`
+    : '';
+const apiUrl = path => `${API_BASE_URL}${path}`;
+
 let history = [];
 let imageData = null;
 let recorder = null;
@@ -18,6 +23,28 @@ const headers = () => {
 
     return h;
 };
+
+async function responseJson(response) {
+    const body = await response.text();
+
+    if (!body.trim()) {
+        throw new Error(`Server returned an empty response (HTTP ${response.status}).`);
+    }
+
+    let data;
+
+    try {
+        data = JSON.parse(body);
+    } catch {
+        throw new Error(`Server returned an invalid response (HTTP ${response.status}).`);
+    }
+
+    if (!response.ok) {
+        throw new Error(data.detail || `Request failed (HTTP ${response.status}).`);
+    }
+
+    return data;
+}
 
 function bubble(text, kind = 'bot', sources = []) {
     const el = document.createElement('article');
@@ -47,8 +74,8 @@ function bubble(text, kind = 'bot', sources = []) {
 
 async function check() {
     try {
-        const r = await fetch('/api/health');
-        const d = await r.json();
+        const r = await fetch(apiUrl('/api/health'));
+        const d = await responseJson(r);
 
         $('status').textContent = d.configured
             ? '● Connected'
@@ -109,7 +136,7 @@ $('chatForm').addEventListener('submit', async e => {
     const pending = bubble('Thinking…');
 
     try {
-        const r = await fetch('/api/chat', {
+        const r = await fetch(apiUrl('/api/chat'), {
             method: 'POST',
             headers: {
                 ...headers(),
@@ -122,11 +149,7 @@ $('chatForm').addEventListener('submit', async e => {
             })
         });
 
-        const d = await r.json();
-
-        if (!r.ok) {
-            throw new Error(d.detail || 'Request failed');
-        }
+        const d = await responseJson(r);
 
         pending.textContent = d.answer;
         lastAnswer = d.answer;
@@ -192,17 +215,13 @@ $('mic').onclick = async () => {
             $('mic').disabled = true;
 
             try {
-                const r = await fetch('/api/transcribe', {
+                const r = await fetch(apiUrl('/api/transcribe'), {
                     method: 'POST',
                     headers: headers(),
                     body: data
                 });
 
-                const out = await r.json();
-
-                if (!r.ok) {
-                    throw Error(out.detail);
-                }
+                const out = await responseJson(r);
 
                 $('message').value = out.text;
             } catch (e) {
@@ -227,7 +246,7 @@ $('listen').onclick = async () => {
     $('listen').disabled = true;
 
     try {
-        const r = await fetch('/api/speak', {
+        const r = await fetch(apiUrl('/api/speak'), {
             method: 'POST',
             headers: {
                 ...headers(),
