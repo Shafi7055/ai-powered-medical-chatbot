@@ -1,107 +1,124 @@
 # AI-Powered Medical Chatbot
 
-A medical Q&A assistant built with FastAPI, LangGraph, Groq, Pinecone, and Tavily. The app allows users to ask medical questions and receive conversational answers grounded in a medical knowledge base and optional live web results.
+An educational medical question-and-answer chatbot built with **FastAPI, LangGraph, Groq, Pinecone, and Tavily**. It retrieves relevant passages from a medical PDF knowledge base and can use web search for current or time-sensitive information.
 
-## Overview
+> **Important:** This project provides general information for educational purposes only. It is not a medical device and does not diagnose, treat, or replace advice from a licensed healthcare professional.
 
-This project provides a lightweight medical chatbot interface for:
+## 📋 Table of Contents
 
-- answering general health and medical information questions
-- retrieving relevant passages from a local medical PDF knowledge base
-- using web search as a fallback for current or time-sensitive guidance
-- maintaining short-term conversation memory with SQLite checkpoints
-- exposing a REST API for integration with other frontends or services
+- [Introduction](#-introduction)
+- [How It Works](#-how-it-works)
+- [Tech Stack](#️-tech-stack)
+- [Features](#-features)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [API Usage](#-api-usage)
+- [Screenshots](#️-screenshots)
+- [Safety Notice](#️-safety-notice)
+- [License](#-license)
 
-The application is designed as an educational and triage-support tool, not a replacement for a licensed clinician.
+## 🚀 Introduction
 
-## Features
+This repository contains a lightweight AI-powered medical chatbot with a web interface and REST API. Users can ask general health questions and receive conversational answers grounded in passages retrieved from a medical PDF. When a question calls for current information, the workflow can search the web and use the results as additional context.
 
-- FastAPI backend and web UI
-- LangGraph workflow for retrieval, routing, and answer generation
-- Groq LLM integration for answer synthesis
-- Pinecone vector database for document retrieval
-- Tavily-powered web search fallback
-- SQLite-backed memory for conversation state
-- configurable CORS and optional API token protection
-- simple ingestion pipeline for PDF medical content
+The project also includes short-term conversation memory backed by SQLite and a document-ingestion script for indexing PDF content in Pinecone. It is intended as a learning and experimentation project—not for clinical decision-making.
 
-## Project Structure
+## 🔄 How It Works
+
+1. A user sends a question through the web interface or chat API.
+2. A LangGraph workflow retrieves relevant content from the Pinecone medical knowledge base.
+3. The workflow determines whether web evidence may be useful and, when needed, searches with Tavily.
+4. Groq generates a response using the retrieved context and conversation state.
+5. The application returns the answer and available source information.
+
+## ⚙️ Tech Stack
+
+- **Python** — application and ingestion scripts
+- **FastAPI** — web server and REST API
+- **LangGraph** — orchestration of retrieval and answer-generation steps
+- **LangChain / Groq** — language-model integration
+- **Pinecone** — vector search for medical document passages
+- **Tavily** — web search for current information
+- **SQLite** — short-term conversation checkpoints
+- **HTML, CSS, and JavaScript** — chatbot interface
+
+## ⚡ Features
+
+- 💬 Conversational medical Q&A through a web interface
+- 📚 Retrieval-augmented answers grounded in an indexed medical PDF
+- 🌐 Tavily web-search fallback for current or time-sensitive questions
+- 🧠 Short-term conversation state stored with SQLite checkpoints
+- 🔌 FastAPI REST endpoints for health checks and chat
+- 📄 PDF ingestion script for adding content to the Pinecone index
+- ⚙️ Configurable CORS and optional API-token protection
+- 🧾 Source metadata returned with answers when available
+
+## 📁 Project Structure
 
 ```text
 .
 ├── app/
-│   ├── __init__.py
-│   ├── agent.py          # LangGraph orchestration and answer generation
-│   ├── config.py         # Environment configuration and settings
-│   ├── knowledge.py      # Pinecone document access and retrieval layer
-│   └── main.py           # FastAPI app and API routes
+│   ├── agent.py       # LangGraph workflow and answer generation
+│   ├── config.py      # Environment configuration
+│   ├── knowledge.py   # Pinecone retrieval and document access
+│   └── main.py        # FastAPI application and API routes
 ├── data/
-│   └── Medical_book.pdf  # Medical PDF used for knowledge ingestion
+│   └── Medical_book.pdf
 ├── docs/
 │   └── ai_powered_medical_chatbot_architecture.jpg
-├── static/
+├── static/            # Static frontend assets
 ├── templates/
-│   └── index.html        # Frontend interface
-├── .gitignore
-├── .vscode/
-├── ingest.py             # PDF ingestion script for vector indexing
-├── LICENSE
-├── medical_memory.db     # SQLite memory database
+│   └── index.html     # Chat interface
+├── ingest.py          # PDF ingestion and vector indexing
 ├── requirements.txt
-├── run_ingest.py
 ├── test.py
 ├── test_api.py
-├── README.md
-└── .env.example          # if present in your environment, add your secrets here
+└── README.md
 ```
 
-## Tech Stack
+## 🛠️ Quick Start
 
-- Python
-- FastAPI
-- LangGraph
-- LangChain / Groq
-- Pinecone
-- Tavily
-- SQLite
-- HTML/CSS/JavaScript frontend
+### Prerequisites
 
-## Prerequisites
+- Python 3.10 or newer
+- pip
+- API keys for Groq, Pinecone, and Tavily
+- A Pinecone index you can access
 
-Before running the app, make sure you have:
-
-- Python 3.10+ recommended
-- pip and virtual environment support
-- API keys for:
-  - Groq
-  - Pinecone
-  - Tavily
-
-## Setup
-
-1. Clone the repository:
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Shafi7055/ai-powered-medical-chatbot.git
 cd ai-powered-medical-chatbot
 ```
 
-2. Create and activate a virtual environment:
+### 2. Create and activate a virtual environment
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate   # Linux/macOS
-# or
-.venv\Scripts\activate     # Windows
 ```
 
-3. Install dependencies:
+Linux/macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+Windows:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Create a `.env` file in the project root with the required variables:
+### 4. Configure environment variables
+
+Create a `.env` file in the project root and add your credentials and settings:
 
 ```env
 GROQ_API_KEY=your_groq_api_key
@@ -112,37 +129,33 @@ API_TOKEN=
 ALLOWED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
 ```
 
-5. Ensure your Pinecone index exists and is accessible.
+Keep API keys private. Do not commit your `.env` file.
 
-6. Ingest the medical PDF into the vector database:
+### 5. Index the medical PDF
+
+Make sure your Pinecone index is ready, then run:
 
 ```bash
 python ingest.py --pdf data/Medical_book.pdf
 ```
 
-## Run the Application
-
-Start the backend server:
+### 6. Start the application
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Open the browser at:
+Open [http://localhost:8000/](http://localhost:8000/) in your browser.
 
-```text
-http://localhost:8000/
-```
+## 🔌 API Usage
 
-## API Usage
-
-### Health Check
+### Health check
 
 ```bash
 curl http://127.0.0.1:8000/api/health
 ```
 
-### Chat Endpoint
+### Send a chat message
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/chat" \
@@ -154,43 +167,30 @@ curl -X POST "http://127.0.0.1:8000/api/chat" \
   }'
 ```
 
-Example response:
+A response includes an answer and may include source metadata, for example:
 
 ```json
 {
-  "answer": "Headaches can be caused by stress, dehydration, poor sleep, migraine triggers, or tension. If symptoms are severe or unusual, please seek medical advice.",
+  "answer": "Headaches can have many causes. If your symptoms are severe, unusual, or persistent, seek advice from a healthcare professional.",
   "sources": [
     {"type": "pdf", "page": 12}
   ]
 }
 ```
 
-## How It Works
+## 🖼️ Screenshots
 
-The app uses a LangGraph state machine to:
+The repository includes an architecture diagram at [`docs/ai_powered_medical_chatbot_architecture.jpg`](docs/ai_powered_medical_chatbot_architecture.jpg). Add screenshots of the chat interface here as the UI evolves.
 
-1. retrieve relevant passages from the Pinecone knowledge base
-2. decide whether the question needs web-based evidence
-3. query Tavily for current information if needed
-4. generate a final answer with GroqLLM using the retrieved context and conversation memory
+## ⚠️ Safety Notice
 
-## Important Safety Notice
+This chatbot is for informational and educational use only.
 
-This project is intended for informational and educational use only.
+- It does not provide a diagnosis, treatment plan, or prescription.
+- It cannot replace a clinician's judgment or a consultation with a qualified healthcare professional.
+- Do not use it to make decisions in an emergency.
+- If you may be experiencing a medical emergency—including chest pain, difficulty breathing, severe bleeding, stroke symptoms, or suicidal intent—contact your local emergency services immediately.
 
-- It is not a substitute for professional medical judgment.
-- It is not designed to diagnose, treat, or prescribe care.
-- Users with severe symptoms should contact emergency services or seek urgent medical help immediately.
-- For emergency situations such as chest pain, difficulty breathing, severe bleeding, stroke symptoms, or suicidal intent, contact local emergency services without delay.
+## 📝 License
 
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome. If you would like to improve the chatbot, add safeguards, improve medical prompts, or refine the frontend, please open a pull request with a clear description of the change.
-
-## Project Status
-
-This repository is a functional prototype for an AI-assisted medical chatbot and is suitable for experimentation, learning, and extension into a production-grade clinical support application with stronger validation and safety controls.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
